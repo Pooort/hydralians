@@ -1,27 +1,73 @@
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from config import email, password
 from helpers import get_web_driver
 
 from tqdm import tqdm
 
-#https://www.hydralians.fr/piscine/structure-et-hydraulique/pieces-a-sceller-piscine.html?limit=100&p=2
+#https://www.hydralians.fr/piedestal-hunter-metal-acc.html
+#https://www.hydralians.fr/pompe-rs-ii-1-00-cv-mono-15-m3-h.html
+from mongorepo import MongoRepo
+
+
 class Hydralians:
 
     url = 'https://www.hydralians.fr/'
 
     def __init__(self):
         driver = get_web_driver()
-        driver.implicitly_wait(5)
         driver.set_page_load_timeout(5)
         driver.set_window_size(1920, 1080)
         self.driver = driver
+
+    def get_item_data(self, url):
+        self.driver.get(url)
+        wait = WebDriverWait(self.driver, 10)
+        price_el = wait.until(
+            EC.element_to_be_clickable((By.XPATH, '//span[@class="regular-price"]')))
+        price = price_el.text
+        product_name = self.driver.find_element_by_xpath('//h1[@class="product-name"]').text
+        product_brand = self.driver.find_element_by_xpath('//span[@class="product-brand"]').text
+        ref = self.driver.find_element_by_xpath('//div[@class="ref"]').text
+        codag = self.driver.find_element_by_xpath('//div[@class="codag"]').text
+        description = self.driver.find_element_by_xpath('//div[@class="std"]').text
+        seq = self.driver.find_element_by_xpath('//div[@class="seq"]').text
+        image_urls = [el.get_attribute('src') for el in self.driver.find_elements_by_xpath('//div[@class="product-main-container grid-full"]//div[@class="viewport"]//img')]
+        doc_data = [{'name': el.text, 'url': el.get_attribute('href')} for el in self.driver.find_elements_by_xpath('//div[@class="documents-content"]//a')]
+        try:
+            tax = self.driver.find_element_by_id('tax-deee-eco').text
+        except:
+            tax = ''
+        self.driver.get(url+'#specifications')
+        #self.driver.find_element_by_xpath('//a[@href="#specifications"]/parent::*').click()
+        spec = self.driver.find_element_by_id('product-attribute-specs-table').text
+        return {
+            'url': url,
+            'product_name': product_name,
+            'product_brand': product_brand,
+            'ref': ref,
+            'codag': codag,
+            'description': description,
+            'seq': seq,
+            'price': price,
+            'image_urls': image_urls,
+            'doc_data': doc_data,
+            'spec': spec,
+            'tax': tax
+        }
 
     def make_login(self):
         self.driver.get('https://www.hydralians.fr/customer/account/login/')
         self.driver.find_element_by_id('email').send_keys(email)
         self.driver.find_element_by_id('pass').send_keys(password)
-        self.driver.find_element_by_id('send2').click()
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(
+            EC.element_to_be_clickable((By.ID, 'send2'))).click()
+        data = self.get_item_data('https://www.hydralians.fr/piedestal-hunter-metal-acc.html')
+        MongoRepo.create(data)
 
     def get_category_hrefs(self):
         self.driver.get('https://www.hydralians.fr/site-map')
@@ -44,6 +90,7 @@ class Hydralians:
         return category_hrefs
 
     def get_item_hrefs(self, category_hrefs):
+        self.driver.set_page_load_timeout(30)
         item_hrefs = []
         category_bar = tqdm(total=len(category_hrefs))
         category_bar.set_description(desc='Categories')
@@ -57,9 +104,9 @@ class Hydralians:
                     pass
                 try:
                     current_item_hrefs = [el.get_attribute('href') for el in self.driver.find_elements_by_xpath('//h2[@class="product-name"]/a')]
+                    item_hrefs.extend(current_item_hrefs)
                 except TimeoutException:
                     pass
-                item_hrefs.extend(current_item_hrefs)
 
                 try:
                     site_pages = [el.text for el in
