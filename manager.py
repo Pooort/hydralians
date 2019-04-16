@@ -35,8 +35,11 @@ class Hydralians:
                 self.driver.get(menu_href)
             except TimeoutException:
                 pass
-            current_category_hrefs = [el.get_attribute('href') for el in self.driver.find_elements_by_xpath('//div[@class="sub-categ"]/h5/a')]
-            category_hrefs.extend(current_category_hrefs)
+            try:
+                current_category_hrefs = [el.get_attribute('href') for el in self.driver.find_elements_by_xpath('//div[@class="sub-categ"]/h5/a')]
+                category_hrefs.extend(current_category_hrefs)
+            except TimeoutException:
+                pass
         menu_bar.close()
         return category_hrefs
 
@@ -52,11 +55,17 @@ class Hydralians:
                     self.driver.get('{}?limit=100&p={}'.format(category_href, page))
                 except TimeoutException:
                     pass
-                current_item_hrefs = [el.get_attribute('href') for el in self.driver.find_elements_by_xpath('//h2[@class="product-name"]/a')]
+                try:
+                    current_item_hrefs = [el.get_attribute('href') for el in self.driver.find_elements_by_xpath('//h2[@class="product-name"]/a')]
+                except TimeoutException:
+                    pass
                 item_hrefs.extend(current_item_hrefs)
 
-                site_pages = [el.text for el in
-                              self.driver.find_elements_by_xpath('//div[@class="pages"]/ol/li')]
+                try:
+                    site_pages = [el.text for el in
+                                  self.driver.find_elements_by_xpath('//div[@class="pages"]/ol/li')]
+                except:
+                    site_pages = []
                 page += 1
                 if str(page) not in site_pages:
                     break
