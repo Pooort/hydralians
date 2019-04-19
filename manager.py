@@ -1,15 +1,15 @@
+from time import sleep
+
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from config import email, password
-from helpers import get_web_driver
+from helpers import get_web_driver, wait_function
 
 from tqdm import tqdm
 
-#https://www.hydralians.fr/piedestal-hunter-metal-acc.html
-#https://www.hydralians.fr/pompe-rs-ii-1-00-cv-mono-15-m3-h.html
 from mongorepo import MongoRepo
 
 
@@ -25,25 +25,49 @@ class Hydralians:
 
     def get_item_data(self, url):
         self.driver.get(url)
-        wait = WebDriverWait(self.driver, 10)
-        price_el = wait.until(
-            EC.element_to_be_clickable((By.XPATH, '//span[@class="regular-price"]')))
-        price = price_el.text
+        print(url)
+
+        @wait_function
+        def get_price(self):
+            return self.driver.find_element_by_xpath('//span[@class="regular-price"]').text
+
+        # try:
+        #     price_el = WebDriverWait(self.driver, 240).until(
+        #         EC.presence_of_element_located((By.XPATH, '//span[@class="regular-price"]')))
+        #     price = price_el.text
+        # except Exception as ex:
+        #     price = ''
+        try:
+            price = get_price(self)
+        except:
+            price = ''
         product_name = self.driver.find_element_by_xpath('//h1[@class="product-name"]').text
         product_brand = self.driver.find_element_by_xpath('//span[@class="product-brand"]').text
         ref = self.driver.find_element_by_xpath('//div[@class="ref"]').text
         codag = self.driver.find_element_by_xpath('//div[@class="codag"]').text
-        description = self.driver.find_element_by_xpath('//div[@class="std"]').text
-        seq = self.driver.find_element_by_xpath('//div[@class="seq"]').text
+        try:
+            description = self.driver.find_element_by_xpath('//div[@class="std"]').text
+        except:
+            description = ''
+        try:
+            seq = self.driver.find_element_by_xpath('//div[@class="seq"]').text
+        except:
+            seq = ''
         image_urls = [el.get_attribute('src') for el in self.driver.find_elements_by_xpath('//div[@class="product-main-container grid-full"]//div[@class="viewport"]//img')]
         doc_data = [{'name': el.text, 'url': el.get_attribute('href')} for el in self.driver.find_elements_by_xpath('//div[@class="documents-content"]//a')]
         try:
             tax = self.driver.find_element_by_id('tax-deee-eco').text
         except:
             tax = ''
-        self.driver.get(url+'#specifications')
-        #self.driver.find_element_by_xpath('//a[@href="#specifications"]/parent::*').click()
-        spec = self.driver.find_element_by_id('product-attribute-specs-table').text
+        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        try:
+            spec_el = WebDriverWait(self.driver, 30).until(
+                EC.element_to_be_clickable((By.XPATH, '//a[@href="#specifications"]/parent::*')))
+            spec_el.click()
+            spec = self.driver.find_element_by_id('product-attribute-specs-table').text
+        except:
+            spec = ''
+
         return {
             'url': url,
             'product_name': product_name,
@@ -63,11 +87,8 @@ class Hydralians:
         self.driver.get('https://www.hydralians.fr/customer/account/login/')
         self.driver.find_element_by_id('email').send_keys(email)
         self.driver.find_element_by_id('pass').send_keys(password)
-        wait = WebDriverWait(self.driver, 10)
-        wait.until(
+        WebDriverWait(self.driver, 20).until(
             EC.element_to_be_clickable((By.ID, 'send2'))).click()
-        data = self.get_item_data('https://www.hydralians.fr/piedestal-hunter-metal-acc.html')
-        MongoRepo.create(data)
 
     def get_category_hrefs(self):
         self.driver.get('https://www.hydralians.fr/site-map')
@@ -121,11 +142,6 @@ class Hydralians:
 
     def __enter__(self):
         self.make_login()
-        category_hrefs = self.get_category_hrefs()
-        item_hrefs = self.get_item_hrefs(category_hrefs)
-        with open('urls.txt', 'w') as f:
-            for item_href in item_hrefs:
-                f.write('{}\n'.format(item_href))
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

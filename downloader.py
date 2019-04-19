@@ -1,6 +1,7 @@
 import os
 import urllib.request
 from tqdm import tqdm
+from pprint import pprint
 
 from mongorepo import MongoRepo
 
@@ -17,7 +18,7 @@ def download_file(dir_name, file_name, file_url):
     urllib.request.urlretrieve(file_url, filepath)
 
 
-for document in MongoRepo.read_all():
+def download_data(document):
     item_id = str(document['_id'])
 
     for image_url in document['image_urls']:
@@ -26,3 +27,16 @@ for document in MongoRepo.read_all():
 
     for file_data in document['doc_data']:
         download_file(item_id, '{}.pdf'.format(file_data['name']), file_data['url'])
+
+
+if __name__ == '__main__':
+
+    for document in MongoRepo.read_all():
+        item_id = str(document['_id'])
+
+        for image_url in document['image_urls']:
+            file_name = image_url.rsplit('/', 1)[1]
+            download_file(item_id, file_name, image_url)
+
+        for file_data in document['doc_data']:
+            download_file(item_id, '{}.pdf'.format(file_data['name']), file_data['url'])
