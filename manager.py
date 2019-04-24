@@ -24,7 +24,6 @@ class Hydralians:
 
     def get_item_data(self, url):
         self.driver.get(url)
-        print(url)
 
         @wait_function
         def get_price(self):
