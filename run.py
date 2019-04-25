@@ -34,6 +34,7 @@ with Hydralians() as hydralians:
     items_bar = tqdm(total=len(item_hrefs))
     items_bar.set_description(desc='Items')
     for item_href in item_hrefs:
+        items_bar.update()
         try:
             item_data = hydralians.get_item_data(item_href)
         except Exception as ex:
