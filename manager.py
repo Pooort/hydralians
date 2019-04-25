@@ -20,7 +20,6 @@ class Hydralians:
     def __init__(self):
         driver = get_web_driver()
         driver.set_page_load_timeout(5)
-        driver.set_window_size(1920, 1080)
         self.driver = driver
 
     def get_item_data(self, url):
@@ -84,6 +83,7 @@ class Hydralians:
 
     def make_login(self):
         self.driver.get('https://www.hydralians.fr/customer/account/login/')
+        self.driver.set_window_size(1920, 1080)
         self.driver.find_element_by_id('email').send_keys(email)
         self.driver.find_element_by_id('pass').send_keys(password)
         WebDriverWait(self.driver, 20).until(
