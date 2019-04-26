@@ -1,5 +1,3 @@
-from time import sleep
-
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -9,8 +7,6 @@ from config import email, password
 from helpers import get_web_driver, wait_function
 
 from tqdm import tqdm
-
-from mongorepo import MongoRepo
 
 
 class Hydralians:
@@ -145,3 +141,11 @@ class Hydralians:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.driver.quit()
+
+    def make_order(self, codag):
+        self.driver.find_element_by_id('search').send_keys(codag)
+        self.driver.find_element_by_xpath('//button[@type="submit"]').click()
+        @wait_function
+        def click_order_button():
+            self.driver.find_element_by_id('addToCart_{}'.format(codag)).click()
+        click_order_button()
