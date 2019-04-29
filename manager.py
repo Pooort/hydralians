@@ -1,3 +1,5 @@
+from time import sleep
+
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -147,5 +149,13 @@ class Hydralians:
         self.driver.find_element_by_xpath('//button[@type="submit"]').click()
         @wait_function
         def click_order_button():
-            self.driver.find_element_by_id('addToCart_{}'.format(codag)).click()
-        click_order_button()
+            element = self.driver.find_element_by_id('addToCart_{}'.format(codag))
+            self.driver.execute_script("arguments[0].scrollIntoView();", element)
+            sleep(3)
+            element.click()
+            # WebDriverWait(self.driver, 10).until(
+            #     EC.presence_of_element_located(By.XPATH, '//li[@class="success-msg"]'))
+        try:
+            click_order_button()
+        except:
+            pass
