@@ -144,11 +144,14 @@ class Hydralians:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.driver.quit()
 
-    def make_order(self, codag):
+    def make_order(self, codag, quantity):
         self.driver.find_element_by_id('search').send_keys(codag)
         self.driver.find_element_by_xpath('//button[@type="submit"]').click()
         @wait_function
         def click_order_button():
+            quantity_el = self.driver.find_element_by_id('qty_{}'.format(codag))
+            quantity_el.clear()
+            quantity_el.send_keys(quantity)
             element = self.driver.find_element_by_id('addToCart_{}'.format(codag))
             self.driver.execute_script("arguments[0].scrollIntoView();", element)
             sleep(3)

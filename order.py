@@ -14,8 +14,8 @@ start_time = datetime.datetime.now()
 logger.info('Order script started at {}'.format(start_time))
 
 with Hydralians() as hydralians:
-    for codag in CsvRepo.get_codags():
-        hydralians.make_order(codag)
+    for codag, quantity in CsvRepo.get_codags():
+        hydralians.make_order(codag, quantity)
 
 end_time = datetime.datetime.now()
 logger.info('Order script ended at {}'.format(end_time))

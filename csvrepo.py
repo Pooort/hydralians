@@ -7,4 +7,4 @@ class CsvRepo:
         with open('data.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                yield row['codag']
+                yield row['codag'], row['quantity']
