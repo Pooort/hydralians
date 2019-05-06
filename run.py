@@ -25,13 +25,13 @@ logger.info('Script started at {}'.format(start_time))
 
 with Hydralians() as hydralians:
     category_hrefs = hydralians.get_category_hrefs()
-    item_hrefs = hydralians.get_item_hrefs(category_hrefs[:1])
+    item_hrefs = hydralians.get_item_hrefs(category_hrefs)
     logger.info('Items to parse: {}'.format(len(item_hrefs)))
     # for item_href in item_hrefs:
     #     MongoRepo.create_product_url({'url': item_href})
     items_bar = tqdm(total=len(item_hrefs))
     items_bar.set_description(desc='Items')
-    for item_href in item_hrefs[:1]:
+    for item_href in item_hrefs:
         items_bar.update()
         try:
             item_data = hydralians.get_item_data(item_href)
