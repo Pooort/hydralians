@@ -170,6 +170,8 @@ class Hydralians:
         self.driver.find_element_by_id('customer_sku_csv').send_keys(order_file)
         @wait_function(timeout_param=20)
         def click_order_button():
-            self.driver.find_element_by_id('sku-submit-button').click()
+            element = self.driver.find_element_by_id('sku-submit-button')
+            self.driver.execute_script("arguments[0].scrollIntoView();", element)
+            element.click()
 
         click_order_button()
