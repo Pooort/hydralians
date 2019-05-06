@@ -94,7 +94,7 @@ class Hydralians:
         category_hrefs = []
         menu_bar = tqdm(total=len(menu_hrefs))
         menu_bar.set_description(desc='Menu items')
-        for menu_href in menu_hrefs[:1]:
+        for menu_href in menu_hrefs:
             menu_bar.update()
             try:
                 self.driver.get(menu_href)
