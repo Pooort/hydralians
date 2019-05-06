@@ -46,19 +46,21 @@ def get_logger():
     return logger
 
 
-def wait_function(func, timeout_param=None):
-    def inner_func(*args, **kwargs):
-        timeout = 10 if timeout_param is None else timeout_param
-        start_time = time.time()
-        while True:
-            try:
-                return func(*args, **kwargs)
-            except Exception as ex:
-                duration = time.time() - start_time
-                if duration > timeout:
-                    raise ex
-                time.sleep(0.5)
-    return inner_func
+def wait_function(timeout_param=None):
+    def wait_inner(func):
+        def inner_func(*args, **kwargs):
+            timeout = 10 if timeout_param is None else timeout_param
+            start_time = time.time()
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as ex:
+                    duration = time.time() - start_time
+                    if duration > timeout:
+                        raise ex
+                    time.sleep(0.5)
+        return inner_func
+    return wait_inner
 
 
 logger = get_logger()
