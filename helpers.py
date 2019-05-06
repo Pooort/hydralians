@@ -59,3 +59,6 @@ def wait_function(func, timeout_param=None):
                     raise ex
                 time.sleep(0.5)
     return inner_func
+
+
+logger = get_logger()

@@ -1,3 +1,4 @@
+import os
 from time import sleep
 
 from selenium.common.exceptions import TimeoutException
@@ -5,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from config import email, password
+from config import email, password, PROJECTPATH
 from helpers import get_web_driver, wait_function
 
 from tqdm import tqdm
@@ -93,7 +94,7 @@ class Hydralians:
         category_hrefs = []
         menu_bar = tqdm(total=len(menu_hrefs))
         menu_bar.set_description(desc='Menu items')
-        for menu_href in menu_hrefs:
+        for menu_href in menu_hrefs[:1]:
             menu_bar.update()
             try:
                 self.driver.get(menu_href)
@@ -162,3 +163,13 @@ class Hydralians:
             click_order_button()
         except:
             pass
+
+    def make_order_from_file(self):
+        self.driver.get('https://www.hydralians.fr/customer_order/sku/')
+        order_file = os.path.join(PROJECTPATH, 'order.csv')
+        self.driver.find_element_by_id('customer_sku_csv').send_keys(order_file)
+        @wait_function
+        def click_order_button():
+            self.driver.find_element_by_id('sku-submit-button').click()
+
+        click_order_button()

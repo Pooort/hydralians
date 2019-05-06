@@ -2,9 +2,9 @@ import csv
 
 class CsvRepo:
     @staticmethod
-    def get_codags():
+    def get_codags_and_quantity():
 
-        with open('data.csv', newline='') as csvfile:
+        with open('order.csv', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                yield row['codag'], row['quantity']
+                yield row['CODAG'], row['Quantité']
