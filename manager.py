@@ -24,7 +24,7 @@ class Hydralians:
     def get_item_data(self, url):
         self.driver.get(url)
 
-        @wait_function
+        @wait_function()
         def get_price(self):
             return self.driver.find_element_by_xpath('//span[@class="regular-price"]').text
 
@@ -148,7 +148,7 @@ class Hydralians:
     def make_order(self, codag, quantity):
         self.driver.find_element_by_id('search').send_keys(codag)
         self.driver.find_element_by_xpath('//button[@type="submit"]').click()
-        @wait_function
+        @wait_function()
         def click_order_button():
             quantity_el = self.driver.find_element_by_id('qty_{}'.format(codag))
             quantity_el.clear()
