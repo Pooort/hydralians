@@ -26,7 +26,8 @@ class MongoRepo:
         existed_item = collection.find_one({'url': data['url']})
         if existed_item:
             data['diff'] = get_dicts_diff(existed_item, data)
-            logger.info(data['diff'])
+            if data['diff']['old'] != data['diff']['new']:
+                logger.info(data['diff'])
         collection.update_one({'url': data['url']}, {"$set": data}, True)
         return collection.find_one({'url': data['url']})
 
